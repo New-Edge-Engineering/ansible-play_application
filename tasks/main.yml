@@ -1,0 +1,62 @@
+---
+# User and group management
+- name: Play Application | Ensure group for this play app exists
+  group:
+    name: "{{ play_application_group }}"
+    state: present
+  sudo: yes
+
+- name: Play Application | Ensure user for this play app exists
+  user:
+    name: "{{ play_application_username }}"
+    groups: "{{ play_application_group }}"
+    createhome: no
+    shell: /bin/bash
+    system: yes
+    state: present
+  sudo: yes
+
+# File system structure
+- name: Play Application | Ensure project directory exists
+  file:
+    path: "{{ play_application_path }}"
+    state: directory
+    recurse: yes
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
+  sudo: yes
+
+# Application installation
+- name: Play Application | Download application universal package
+  get_url:
+    url: "{{ play_application_url }}"
+    dest: /tmp/
+  register: play_application_download
+
+- name: Play Application | Ensure application exists within the play app file system
+  unarchive:
+    copy: no
+    src: "{{ play_application_download.dest }}"
+    dest: "{{ play_application_path }}/"
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
+  sudo: yes
+  sudo_user: "{{ play_application_username }}"
+
+- name: Play Application | Ensure link is pointing to latest version
+  file:
+    src: "{{ play_application_path }}/data-management-authentication-14.11.10"
+    dest: "{{ play_application_path }}/current"
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
+    state: link
+  sudo: yes
+
+# Service installation
+- name: Play Application | Ensure the upstart configuration exists on the system
+  template:
+    src: upstart.j2
+    dest: "/etc/init/{{ play_application_name }}.conf"
+  sudo: yes
+  notify:
+    - restart service

@@ -1,0 +1,34 @@
+#{{ ansible_managed }}
+
+description "{{ play_application_name }} play application"
+
+env USER={{ play_application_username }}
+env GROUP={{ play_application_group }}
+env APP_HOME={{ play_application_path }}/current
+env APP_NAME={{ play_application_name }}
+env PORT=9000
+env BIND_ADDRESS=0.0.0.0
+env EXTRA="-J-Xms{{ play_application_xms }} -J-Xmx{{ play_application_xmx }} -J-server"
+
+start on runlevel [2345]
+stop on runlevel [06]
+
+respawn
+respawn limit 10 5
+umask 022
+expect daemon
+
+pre-start script
+    #If improper shutdown and the PID file is left on disk delete it so we can start again
+    if [ -f ${APP_HOME}/RUNNING_PID ] && ! ps -p `cat ${APP_HOME}/RUNNING_PID` > /dev/null ; then
+        echo 'pid file found, deleting'
+        rm ${APP_HOME}/RUNNING_PID ;
+    else
+        echo 'no pid file found when starting'
+    fi
+end script
+
+exec start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS{% for override in play_application_overrides %} -D{{ override.key }}={{ override.value }}{% endfor %} $EXTRA
+
+
+# See more at: http://www.agileand.me/blog/posts/play-2-2-x-upstart-init-script

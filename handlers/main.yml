@@ -1,0 +1,5 @@
+---
+- name: restart service
+  service:
+    name: "{{ play_application_name }}"
+    state: restarted
