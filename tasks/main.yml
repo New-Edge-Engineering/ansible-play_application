@@ -27,6 +27,13 @@
   sudo: yes
 
 # Application installation
+- name: Play Application | Install supporting software
+  apt:
+    name: "{{ item }}"
+    state: installed
+  sudo: yes
+  with_items:
+    - unzip
 - name: Play Application | Download application universal package
   get_url:
     url: "{{ play_application_url }}"
@@ -45,7 +52,7 @@
 
 - name: Play Application | Ensure link is pointing to latest version
   file:
-    src: "{{ play_application_path }}/data-management-authentication-14.11.10"
+    src: "{{ play_application_path }}/{{ play_application_name }}-{{ play_application_version }}"
     dest: "{{ play_application_path }}/current"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
