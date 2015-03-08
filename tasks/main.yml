@@ -34,6 +34,7 @@
   sudo: yes
   with_items:
     - unzip
+
 - name: Play Application | Download application universal package
   get_url:
     url: "{{ play_application_url }}"
