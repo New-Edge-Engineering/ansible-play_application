@@ -4,7 +4,6 @@
   group:
     name: "{{ play_application_group }}"
     state: present
-  sudo: yes
 
 - name: Play Application | Ensure user for this play app exists
   user:
@@ -14,7 +13,6 @@
     shell: /bin/bash
     system: yes
     state: present
-  sudo: yes
 
 # File system structure
 - name: Play Application | Ensure project directory exists
@@ -24,14 +22,12 @@
     recurse: yes
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
-  sudo: yes
 
 # Application installation
 - name: Play Application | Install supporting software
   apt:
     name: "{{ item }}"
     state: installed
-  sudo: yes
   with_items:
     - unzip
 
@@ -48,8 +44,8 @@
     dest: "{{ play_application_path }}/"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
-  sudo: yes
-  sudo_user: "{{ play_application_username }}"
+  become: yes
+  become_user: "{{ play_application_username }}"
 
 - name: Play Application | Ensure link is pointing to latest version
   file:
@@ -58,24 +54,23 @@
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
     state: link
-  sudo: yes
 
 #  Application modification
 - name: Play Application | Create central log directory
-  file: >
-    path="/var/log/{{ play_application_group }}/{{ play_application_username }}"
-    owner="{{ play_application_username }}"
-    group="{{ play_application_group }}"
-    state=directory
-    recurse=yes
+  file:
+    path: "/var/log/{{ play_application_group }}/{{ play_application_username }}"
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
+    state: directory
+    recurse: yes
 
 - name: Play Apllication | Link application log directory to central directory
-  file: >
-    src="/var/log/{{ play_application_group }}/{{ play_application_username }}"
-    dest="{{ play_application_path }}/current/logs"
-    owner="{{ play_application_username }}"
-    group="{{ play_application_group }}"
-    state=link
+  file:
+    src: "/var/log/{{ play_application_group }}/{{ play_application_username }}"
+    dest: "{{ play_application_path }}/current/logs"
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
+    state: link
 
 # Service installation
 - name: Play Application | Ensure the upstart configuration exists on the system
