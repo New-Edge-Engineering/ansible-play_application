@@ -44,6 +44,8 @@
     dest: "{{ play_application_path }}/"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
+  become: yes
+  become_user: "{{ play_application_username }}"
 
 - name: Play Application | Ensure link is pointing to latest version
   file:
