@@ -1,11 +1,11 @@
 ---
 # User and group management
-- name: Play Application | Ensure group for this play app exists
+- name: Ensure group for this play app exists
   group:
     name: "{{ play_application_group }}"
     state: present
 
-- name: Play Application | Ensure user for this play app exists
+- name: Ensure user for this play app exists
   user:
     name: "{{ play_application_username }}"
     groups: "{{ play_application_group }}"
@@ -15,7 +15,7 @@
     state: present
 
 # File system structure
-- name: Play Application | Ensure project directory exists
+- name: Ensure project directory exists
   file:
     path: "{{ play_application_path }}"
     state: directory
@@ -24,20 +24,20 @@
     group: "{{ play_application_group }}"
 
 # Application installation
-- name: Play Application | Install supporting software
+- name: Install supporting software
   apt:
     name: "{{ item }}"
     state: installed
   with_items:
     - unzip
 
-- name: Play Application | Download application universal package
+- name: Download application universal package
   get_url:
     url: "{{ play_application_url }}"
     dest: /tmp/
   register: play_application_download
 
-- name: Play Application | Ensure application exists within the play app file system
+- name: Ensure application exists within the play app file system
   unarchive:
     copy: no
     src: "{{ play_application_download.dest }}"
@@ -47,7 +47,7 @@
   become: yes
   become_user: "{{ play_application_username }}"
 
-- name: Play Application | Ensure link is pointing to latest version
+- name: Ensure link is pointing to latest version
   file:
     src: "{{ play_application_path }}/{{ play_application_name }}-{{ play_application_version }}"
     dest: "{{ play_application_path }}/current"
@@ -56,7 +56,7 @@
     state: link
 
 #  Application modification
-- name: Play Application | Create central log directory
+- name: Create central log directory
   file:
     path: "/var/log/{{ play_application_group }}/{{ play_application_username }}"
     owner: "{{ play_application_username }}"
@@ -64,7 +64,7 @@
     state: directory
     recurse: yes
 
-- name: Play Apllication | Link application log directory to central directory
+- name: Link application log directory to central directory
   file:
     src: "/var/log/{{ play_application_group }}/{{ play_application_username }}"
     dest: "{{ play_application_path }}/current/logs"
@@ -72,8 +72,18 @@
     group: "{{ play_application_group }}"
     state: link
 
+- name: Ensure correct values are used within configuration file.
+  lineinfile:
+    dest: "{{ play_application_path }}/current/conf/application.conf"
+    group: "{{ play_application_group }}"
+    line: "{{ item.key }}=\"{{ item.value }}\""
+    owner: "{{ play_application_username }}"
+    regexp: "(#|){{ item.key }}=.*"
+    state: present
+  with_items: "{{ play_application_overrides|default([]) }}"
+
 # Service installation
-- name: Play Application | Ensure the upstart configuration exists on the system
+- name: Ensure the upstart configuration exists on the system
   template:
     src: upstart.j2
     dest: "/etc/init/{{ play_application_name }}.conf"

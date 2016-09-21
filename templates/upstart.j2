@@ -2,13 +2,14 @@
 
 description "{{ play_application_name }} play application"
 
-env USER={{ play_application_username }}
-env GROUP={{ play_application_group }}
-env APP_HOME={{ play_application_path }}/current
-env APP_NAME={{ play_application_name }}
-env PORT=9000
-env BIND_ADDRESS=0.0.0.0
-env EXTRA="-J-Xms{{ play_application_xms }} -J-Xmx{{ play_application_xmx }} -J-server"
+env USER={{ play_application_username }}  # should match the user you want to run the app as
+env GROUP={{ play_application_group }}  # should match the group you want to run the app as
+env APP_HOME={{ play_application_path }}/current  # should match the folder of your play application
+env APP_NAME={{ play_application_name }}  # variable should match ‘:name’ variable in your build.sbt file
+env PORT=9000  # is the port the app should listen on
+env BIND_ADDRESS=0.0.0.0  # is the ip the app should listen on
+env EXTRA="-J-Xms{{ play_application_xms }} -J-Xmx{{ play_application_xmx }} -J-server -Dconfig.file={{ play_application_path }}/current/conf/application.conf"  # takes additional jvm arguments to pass into the app such as ‘-Dconfig.file=’
+#env DEBUG="-J-debug -J-verbose"
 
 start on runlevel [2345]
 stop on runlevel [06]
@@ -28,7 +29,9 @@ pre-start script
     fi
 end script
 
-exec start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS{% for override in play_application_overrides %} -D{{ override.key }}={{ override.value }}{% endfor %} $EXTRA
+exec start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS $EXTRA $DEBUG
 
 
-# See more at: http://www.agileand.me/blog/posts/play-2-2-x-upstart-init-script
+# sudo su authentication /opt/neel/authentication/current/bin/provider -- -Dhttp.port=9000 -Dhttp.address=0.0.0.0 -J-Xms128M -J-Xmx2048M -J-server -J-debug -J-verbose -Dconfig.file=/opt/neel/authentication/current/conf/application.conf
+
+# See more at: http://www.agileand.me/play-2-2-x-upstart-init-script
