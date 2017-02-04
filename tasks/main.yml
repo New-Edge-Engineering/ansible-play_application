@@ -41,7 +41,7 @@
   unarchive:
     copy: no
     src: "{{ play_application_download.dest }}"
-    dest: "{{ play_application_path }}/"
+    dest: "{{ play_application_path }}"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
   become: yes
