@@ -31,19 +31,14 @@
   with_items:
     - unzip
 
-- name: Download application universal package
-  get_url:
-    url: "{{ play_application_url }}"
-    dest: /tmp/
-  register: play_application_download
-
 - name: Ensure application exists within the play app file system
   unarchive:
-    copy: no
-    src: "{{ play_application_download.dest }}"
+    # copy: no
+    src: "{{ play_application_url }}"
     dest: "{{ play_application_path }}"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
+    remote_src: yes
   become: yes
   become_user: "{{ play_application_username }}"
 
