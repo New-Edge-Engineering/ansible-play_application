@@ -33,11 +33,10 @@
 
 - name: Ensure application exists within the play app file system
   unarchive:
-    # copy: no
     src: "{{ play_application_url }}"
     dest: "{{ play_application_path }}"
-    owner: "{{ play_application_username }}"
-    group: "{{ play_application_group }}"
+    # owner: "{{ play_application_username }}"
+    # group: "{{ play_application_group }}"
     remote_src: yes
   become: yes
   become_user: "{{ play_application_username }}"
@@ -82,6 +81,6 @@
   template:
     src: upstart.j2
     dest: "/etc/init/{{ play_application_name }}.conf"
-  sudo: yes
+  become: yes
   notify:
     - restart service
