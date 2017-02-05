@@ -35,8 +35,8 @@
   unarchive:
     src: "{{ play_application_url }}"
     dest: "{{ play_application_path }}"
-    # owner: "{{ play_application_username }}"
-    # group: "{{ play_application_group }}"
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
     remote_src: yes
   become: yes
   become_user: "{{ play_application_username }}"
@@ -81,6 +81,6 @@
   template:
     src: upstart.j2
     dest: "/etc/init/{{ play_application_name }}.conf"
-  become: yes
+  sudo: yes
   notify:
     - restart service
