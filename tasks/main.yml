@@ -38,8 +38,10 @@
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
     remote_src: yes
-  become: yes
-  become_user: "{{ play_application_username }}"
+  # become: yes
+  # become_user: "{{ play_application_username }}"
+  # register: play_application_unarchived
+
 
 - name: Ensure link is pointing to latest version
   file:
