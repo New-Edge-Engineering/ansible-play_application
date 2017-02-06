@@ -38,10 +38,14 @@
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
     remote_src: yes
-  # become: yes
-  # become_user: "{{ play_application_username }}"
-  # register: play_application_unarchived
 
+- name: Ensure application has the correct permissions
+  file:
+    dest: "{{ play_application_path }}"
+    owner: "{{ play_application_username }}"
+    group: "{{ play_application_group }}"
+    recurse: yes
+    state: directory
 
 - name: Ensure link is pointing to latest version
   file:
