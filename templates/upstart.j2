@@ -11,6 +11,10 @@ env BIND_ADDRESS=0.0.0.0  # is the ip the app should listen on
 env EXTRA="-J-Xms{{ play_application_xms }} -J-Xmx{{ play_application_xmx }} -J-server -Dconfig.file={{ play_application_path }}/current/conf/application.conf"  # takes additional jvm arguments to pass into the app such as ‘-Dconfig.file=’
 #env DEBUG="-J-debug -J-verbose"
 
+{% for  parameter in play_application_environment %}
+env {{ parameter.key }}="{{ parameter.value }}"
+{% endfor %}
+
 start on runlevel [2345]
 stop on runlevel [06]
 
