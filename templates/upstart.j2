@@ -2,6 +2,16 @@
 
 description "{{ play_application_name }} play application"
 
+# Output application overrides to help environment specific replacements
+{% for  parameter in play_application_overrides -%}
+{%  if parameter.value == True or parameter.value == False -%}
+env {{ parameter.key|upper }}={{ parameter.value|lower }}
+{%  elif parameter.value is number -%}
+env {{ parameter.key|upper }}={{ parameter.value }}
+{%  else -%}
+env {{ parameter.key|upper }}='{{ parameter.value }}'
+{%  endif -%}
+{% endfor %}
 env USER={{ play_application_username }}  # should match the user you want to run the app as
 env GROUP={{ play_application_group }}  # should match the group you want to run the app as
 env APP_HOME={{ play_application_path }}/current  # should match the folder of your play application
@@ -10,17 +20,6 @@ env PORT=9000  # is the port the app should listen on
 env BIND_ADDRESS=0.0.0.0  # is the ip the app should listen on
 env EXTRA="-J-Xms{{ play_application_xms }} -J-Xmx{{ play_application_xmx }} -J-server -Dconfig.file={{ play_application_path }}/current/conf/application.conf"  # takes additional jvm arguments to pass into the app such as ‘-Dconfig.file=’
 #env DEBUG="-J-debug -J-verbose"
-
-{% for  parameter in play_application_environment -%}
-{%  if parameter.value == True or parameter.value == False -%}
-env {{ parameter.key }}={{ parameter.value|lower }}
-{%  elif parameter.value is number -%}
-env {{ parameter.key }}={{ parameter.value }}
-{%  else -%}
-env {{ parameter.key }}="{{ parameter.value }}"
-{%  endif -%}
-export {{ parameter.key }}
-{% endfor %}
 
 start on runlevel [2345]
 stop on runlevel [06]
@@ -40,8 +39,13 @@ pre-start script
     fi
 end script
 
-exec start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS $EXTRA $DEBUG
+exec $ENVIRONMENT start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS{% for parameter in play_application_overrides %} -D{{ parameter.key }}=${{ parameter.key|upper }}{% endfor %} $EXTRA $DEBUG
 
+post-stop script
+    if [ -f ${APP_HOME}/RUNNING_PID ] && ! ps -p `cat ${APP_HOME}/RUNNING_PID` > /dev/null ; then
+        rm ${APP_HOME}/RUNNING_PID ;
+    fi
+end script
 
 # sudo su authentication /opt/neel/authentication/current/bin/provider -- -Dhttp.port=9000 -Dhttp.address=0.0.0.0 -J-Xms128M -J-Xmx2048M -J-server -J-debug -J-verbose -Dconfig.file=/opt/neel/authentication/current/conf/application.conf
 

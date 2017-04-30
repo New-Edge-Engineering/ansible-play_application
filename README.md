@@ -1,4 +1,3 @@
-ansible-play_application
-========================
+# Ansible Play Framework Application
 
-Ansible role defining the installation and configuration of a play application
+Ansible role defining the installation and configuration of a [Play Framework](https://www.playframework.com/) application.
