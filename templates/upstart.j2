@@ -3,15 +3,6 @@
 description "{{ play_application_name }} play application"
 
 # Output application overrides to help environment specific replacements
-{% for  parameter in play_application_overrides -%}
-{%  if parameter.value == True or parameter.value == False -%}
-env {{ parameter.key|replace('.','_')|upper }}={{ parameter.value|lower }}
-{%  elif parameter.value is number -%}
-env {{ parameter.key|replace('.','_')|upper }}={{ parameter.value }}
-{%  else -%}
-env {{ parameter.key|replace('.','_')|upper }}='{{ parameter.value }}'
-{%  endif -%}
-{% endfor %}
 env USER={{ play_application_username }}  # should match the user you want to run the app as
 env GROUP={{ play_application_group }}  # should match the group you want to run the app as
 env APP_HOME={{ play_application_path }}/current  # should match the folder of your play application
@@ -39,7 +30,7 @@ pre-start script
     fi
 end script
 
-exec $ENVIRONMENT start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS{% for parameter in play_application_overrides %} -D{{ parameter.key }}=${{ parameter.key|upper }}{% endfor %} $EXTRA $DEBUG
+exec $ENVIRONMENT start-stop-daemon --pidfile ${APP_HOME}/RUNNING_PID --chdir ${APP_HOME} --chuid $USER:$GROUP --exec ${APP_HOME}/bin/$APP_NAME --background --start -- -Dhttp.port=$PORT -Dhttp.address=$BIND_ADDRESS $EXTRA $DEBUG
 
 post-stop script
     if [ -f ${APP_HOME}/RUNNING_PID ] && ! ps -p `cat ${APP_HOME}/RUNNING_PID` > /dev/null ; then

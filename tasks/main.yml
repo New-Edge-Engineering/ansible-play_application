@@ -72,14 +72,44 @@
     group: "{{ play_application_group }}"
     state: link
 
-- name: Ensure correct values are used within configuration file.
+# - debug: msg="boolean?  {{ item.value is sameas False or item.value is sameas True }}"
+#   with_items: "{{ play_application_overrides|default([]) }}"
+# - debug: msg="string?  {{ not(item.value is sameas False or item.value is sameas True) and not(item.value is number) }}"
+#   with_items: "{{ play_application_overrides|default([]) }}"
+# - debug: msg="number?  {{ not(item.value is sameas False or item.value is sameas True) and item.value is number }}"
+#   with_items: "{{ play_application_overrides|default([]) }}"
+
+- name: Ensure correct string values are used within configuration file.
   lineinfile:
     dest: "{{ play_application_path }}/current/conf/application.conf"
     group: "{{ play_application_group }}"
     line: "{{ item.key }}=\"{{ item.value }}\""
     owner: "{{ play_application_username }}"
-    regexp: "(#|){{ item.key }}=.*"
+    regexp: "^(#|){{ item.key }}=(\").*(\"|)$"
     state: present
+  when: not(item.value is sameas False or item.value is sameas True) and not(item.value is number)
+  with_items: "{{ play_application_overrides|default([]) }}"
+
+- name: Ensure correct number values are used within configuration file.
+  lineinfile:
+    dest: "{{ play_application_path }}/current/conf/application.conf"
+    group: "{{ play_application_group }}"
+    line: "{{ item.key }}={{ item.value }}"
+    owner: "{{ play_application_username }}"
+    regexp: "^(#|){{ item.key }}=[0-9]{0,}$"
+    state: present
+  when: not(item.value is sameas False or item.value is sameas True) and item.value is number
+  with_items: "{{ play_application_overrides|default([]) }}"
+
+- name: Ensure correct boolean values are used within configuration file.
+  lineinfile:
+    dest: "{{ play_application_path }}/current/conf/application.conf"
+    group: "{{ play_application_group }}"
+    line: "{{ item.key }}={{ item.value|lower }}"
+    owner: "{{ play_application_username }}"
+    regexp: "^(#|){{ item.key }}=(true|false)$"
+    state: present
+  when: item.value is sameas False or item.value is sameas True
   with_items: "{{ play_application_overrides|default([]) }}"
 
 # Service installation
