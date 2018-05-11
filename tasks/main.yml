@@ -117,6 +117,5 @@
   template:
     src: upstart.j2
     dest: "/etc/init/{{ play_application_name }}.conf"
-  sudo: yes
   notify:
     - restart service
