@@ -25,15 +25,20 @@
 
 # Application installation
 - name: Install supporting software
-  apt:
+  package:
     name: "{{ item }}"
     state: installed
   with_items:
     - unzip
 
+- name: ensure archive exists
+  get_url:
+    url: "{{ play_application_url }}"
+    dest: /tmp/
+
 - name: Ensure application exists within the play app file system
   unarchive:
-    src: "{{ play_application_url }}"
+    src: "/tmp/{{ play_application_filename }}"
     dest: "{{ play_application_path }}"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
@@ -117,5 +122,6 @@
   template:
     src: upstart.j2
     dest: "/etc/init/{{ play_application_name }}.conf"
+  when: lookup('env', 'ANSIBLE_CONTAINER') is not defined
   notify:
     - restart service

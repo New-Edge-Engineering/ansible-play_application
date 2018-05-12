@@ -5,6 +5,7 @@ play_application_path: "/opt/{{ play_application_group }}/{{ play_application_us
 play_application_version: "0.0.0"
 play_application_name: "unknown"
 play_application_url: ""
+play_application_filename:  "{{ play_application_name }}-{{ service_version }}.zip"
 play_application_overrides: []  # List of dictionaries of key and value attributes.
 play_application_xms: 128M
 play_application_xmx: 512M
