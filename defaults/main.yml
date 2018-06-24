@@ -1,4 +1,6 @@
 ---
+play_minio_access_key: ""
+play_minio_secret_key: ""
 play_application_group: play
 play_application_username: play
 play_application_path: "/opt/{{ play_application_group }}/{{ play_application_username }}"

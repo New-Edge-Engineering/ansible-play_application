@@ -31,14 +31,45 @@
   with_items:
     - unzip
 
-- name: ensure archive exists
+- name: create temporary download directory
+  tempfile:
+    state: directory
+    suffix: play
+  register: dms_editor_download_dir
+
+- name: ensure archive exists from url
   get_url:
     url: "{{ play_application_url }}"
-    dest: /tmp/
+    dest: "{{ dms_editor_download_dir.path }}/"
+  when: not(
+      (play_application_url is undefined) or
+      (play_application_url is none) or
+      (play_application_url|trim == '')
+    )
+
+- name: ensure archive exists from s3/minio
+  aws_s3:
+    aws_access_key: "{{ play_minio_access_key }}"
+    aws_secret_key: "{{ play_minio_secret_key }}"
+    bucket: distribution
+    dest: "{{ dms_editor_download_dir.path }}/{{ play_application_filename }}"
+    mode: get
+    object: "jenkins/dms/play-scala/{{ play_application_filename }}"
+    rgw: True
+    s3_url: https://minio.newedgeengineering.net/
+  when: not(
+      (play_minio_access_key is undefined) or
+      (play_minio_access_key is none) or
+      (play_minio_access_key|trim == '')
+    ) and not(
+      (play_minio_secret_key is undefined) or
+      (play_minio_secret_key is none) or
+      (play_minio_secret_key|trim == '')
+    )
 
 - name: Ensure application exists within the play app file system
   unarchive:
-    src: "/tmp/{{ play_application_filename }}"
+    src: "{{ dms_editor_download_dir.path }}/{{ play_application_filename }}"
     dest: "{{ play_application_path }}"
     owner: "{{ play_application_username }}"
     group: "{{ play_application_group }}"
