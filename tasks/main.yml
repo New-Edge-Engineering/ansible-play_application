@@ -54,7 +54,7 @@
     bucket: distribution
     dest: "{{ dms_editor_download_dir.path }}/{{ play_application_filename }}"
     mode: get
-    object: "jenkins/dms/play-scala/{{ play_application_filename }}"
+    object: "jenkins/{{ play_application_system }}/play-scala/{{ play_application_filename }}"
     rgw: True
     s3_url: https://minio.newedgeengineering.net/
   when: not(
